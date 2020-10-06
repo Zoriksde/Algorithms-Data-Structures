@@ -17,8 +17,9 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* ====================================================================================================== */
 /* Zaimplementuj ShellSort ( dowolny algorytm licz¹cy dystans ) [ ZROBIONE ] */
 /* Zaimplementuj Algorytm Euklidesa ( rekurencyjnie oraz iteracyjnie ) [ ZROBIONE ] */
-/* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych )*/
-
+/* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych ) [ ZROBIONE ] */
+/* Zaimplementuj wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
+/* Zaimplementuj drzewo poszukiwañ binarnych BST */
 
 
 class MinHeap final {
@@ -522,8 +523,28 @@ void SitoErastotenesa(int n) {
 
 }
 
+/* Wyszukiwanie interpolacyjne z heurystykami dzia³a w czasie O(log log n ) */
+/* Heurystyka to metoda znajdowania rozwi¹zañ, dla której nie ma gwarancji znalezienia rozwi¹zania 
+optymalnego lub nawet prawid³owego, u¿ywamy go pe³ny algorytm jest zbyt kosztowny lub nawet nieznany. */
+/* Metoda ta s³u¿y do znalezienia rozwi¹zañ przybli¿onych, na podstawie których wyliczamy ostateczny rezultat 
+pe³nego algorytmu */
+/* Stosujemy przy równomiernym rozk³adzie zbioru S */
+
+int InterpolationSearch(std::vector<int>& vec, int left, int right, int k) {
+	while (left < right && vec[left] <= k && vec[right] >= k) {
+		int idx = left + (((double)(right - left) / (vec[right] - vec[left])) * (k - vec[left]));
+		
+		if (vec[idx] == k) return idx;
+		else if (vec[idx] < k) left = idx + 1;
+		else right = idx - 1;
+	}
+}
+
+
 int main() {
-	std::vector<int> v = { 5,8,3,9,0,7,44,55,2,43,11, 22 };
+	std::vector<int> v = { 5,8,3,9,0,7,44,55,2,43,11, 22,17,66 };
 	
-	SitoErastotenesa(113);
+	HeapSort(v);
+	PrintVector(v);
+	std::cout << InterpolationSearch(v, 0, v.size() - 1, 17) << "\n";
 }
