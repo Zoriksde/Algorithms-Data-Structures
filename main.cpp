@@ -18,8 +18,8 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj ShellSort ( dowolny algorytm licz¹cy dystans ) [ ZROBIONE ] */
 /* Zaimplementuj Algorytm Euklidesa ( rekurencyjnie oraz iteracyjnie ) [ ZROBIONE ] */
 /* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych ) [ ZROBIONE ] */
-/* Zaimplementuj wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
-/* Zaimplementuj drzewo poszukiwañ binarnych BST */
+/* Zaimplementuj Wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
+/* Zaimplementuj Drzewo poszukiwañ binarnych BST ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
 
 
 class MinHeap final {
@@ -221,25 +221,25 @@ void InsertionSort(std::vector<int>& vec) {
 }
 
 /* Time: O(log(n)) */
-void HeapDown(std::vector<int>& vec, int size ,int n) {
+void HeapDown(std::vector<int>& vec, int size, int k) {
+	int v = vec[k];
 	int j;
-	int v = vec[n];
-	
-	while (n <= (size - 1) / 2) {
-		j = 2 * n + 1;
 
-		if (j + 1 < size){
-			if (vec[j + 1] > vec[j]) j++;
+	while (k <= (size - 1) / 2) {
+		j = 2 * k + 1;
+
+		if (j + 1 < size) {
+			if (vec[j] < vec[j + 1]) j++;
 		}
 
 		if (j < size && vec[j] > v) {
-			vec[n] = vec[j];
-			n = j;
+			vec[k] = vec[j];
+			k = j;
 		}
 		else break;
 	}
 
-	vec[n] = v;
+	vec[k] = v;
 }
 
 /* Time: O(n) */
@@ -389,7 +389,6 @@ int IterativeBinarySearch(std::vector<int>& vec, int left, int right, int k) {
 }
 
 void BorderQuickSort(std::vector<int>& vec, int left, int right) {
-	
 	if (left >= right) return;
 
 	int i = left;
@@ -399,7 +398,7 @@ void BorderQuickSort(std::vector<int>& vec, int left, int right) {
 	while (i < right) {
 		if (vec[i] < v) {
 			b++;
-			if (i != b) std::swap(vec[b], vec[i]);
+			if (b != i) std::swap(vec[i], vec[b]);
 		}
 
 		i++;
@@ -413,7 +412,6 @@ void BorderQuickSort(std::vector<int>& vec, int left, int right) {
 }
 
 void Merge(std::vector<int>& vec, int left, int mid, int right) {
-	int i, j, k;
 
 	std::vector<int> nArr, mArr;
 	int n = mid - left + 1;
@@ -422,47 +420,50 @@ void Merge(std::vector<int>& vec, int left, int mid, int right) {
 	nArr.resize(n);
 	mArr.resize(m);
 
+	int i;
+
 	for (i = 0; i < n; i++) {
 		nArr[i] = vec[left + i];
 	}
 
-	for (j = 0; j < m; j++) {
-		mArr[j] = vec[mid + j + 1];
+	for (i = 0; i < m; i++) {
+		mArr[i] = vec[mid + 1 + i];
 	}
 
 	i = 0;
-	j = 0;
-	k = left;
+	int j = 0;
+	int k = left;
 
 	while (i < n && j < m) {
-		if (nArr[i] < mArr[j]) {
-			vec[k] = nArr[i];
-			i++;
-		}
-		else {
+		if (nArr[i] > mArr[j]) {
 			vec[k] = mArr[j];
 			j++;
 		}
+		else {
+			vec[k] = nArr[i];
+			i++;
+		}
+
 		k++;
 	}
 
 	while (i < n) {
 		vec[k] = nArr[i];
-		i++;
 		k++;
+		i++;
 	}
 
 	while (j < m) {
 		vec[k] = mArr[j];
-		j++;
 		k++;
+		j++;
 	}
 }
 
 void MergeSort(std::vector<int>& vec, int left, int right) {
 	if (left < right) {
-		int mid = left + ((right - left) / 2);
-		
+		int mid = left + ((right - left)) / 2;
+
 		MergeSort(vec, left, mid);
 		MergeSort(vec, mid + 1, right);
 
@@ -471,12 +472,12 @@ void MergeSort(std::vector<int>& vec, int left, int right) {
 }
 
 void ShellSort(std::vector<int>& vec) {
-	int gap, i;
+	int gap, i, j, v;
 
 	for (gap = vec.size() / 2; gap > 0; gap /= 2) {
 		for (i = gap; i < vec.size(); i++) {
-			int j = i;
-			int v = vec[i];
+			j = i;
+			v = vec[i];
 
 			while (j >= gap && vec[j - gap] > v) {
 				vec[j] = vec[j - gap];
@@ -494,10 +495,8 @@ int EuklidesAlgorithm(int a, int b) {
 }
 
 int IterativeEuklidesAlgorithm(int a, int b) {
-	int c;
-
 	while (b != 0) {
-		c = a % b;
+		int c = a % b;
 		a = b;
 		b = c;
 	}
@@ -531,20 +530,164 @@ pe³nego algorytmu */
 /* Stosujemy przy równomiernym rozk³adzie zbioru S */
 
 int InterpolationSearch(std::vector<int>& vec, int left, int right, int k) {
-	while (left < right && vec[left] <= k && vec[right] >= k) {
+	while (left < right && vec[left] <= k && k <= vec[right]) {
 		int idx = left + (((double)(right - left) / (vec[right] - vec[left])) * (k - vec[left]));
-		
+
 		if (vec[idx] == k) return idx;
 		else if (vec[idx] < k) left = idx + 1;
 		else right = idx - 1;
 	}
 }
 
+/* BST */
+
+struct Node {
+	int value;
+	Node* left, * right;
+
+	Node(int value, Node* left, Node* right) : value(value), left(left), right(right) {};
+};
+
+class BinarySearchTree {
+private:
+	Node* root = nullptr;
+public:
+	bool Search(int value) {
+		return this->Search(this->root, value);
+	}
+
+	void Insert(int value) {
+		if (this->Search(value)) return;
+		this->root = this->Insert(this->root, value);
+	}
+
+	void Remove(int value) {
+		if (!this->Search(value)) return;
+		this->Remove(this->root, value);
+	}
+
+	void PreOrder() {
+		this->PreOrder(this->root);
+	}
+
+	void InOrder() {
+		this->InOrder(this->root);
+	}
+
+	void PostOrder() {
+		this->PostOrder(this->root);
+	}
+
+	void LevelOrder() {
+		this->LevelOrder(this->root);
+	}
+
+private:
+
+	bool Search(Node* node, int value) {
+		if (node == nullptr) return false;
+
+		if (node->value < value) return this->Search(node->right, value);
+		else if (node->value > value) return this->Search(node->left, value);
+		else return true;
+	}
+
+	Node* Insert(Node* node, int value) {
+		if (node == nullptr) node = new Node(value, nullptr, nullptr);
+		else if (node->value < value) node->right = this->Insert(node->right, value);
+		else if (node->value > value) node->left = this->Insert(node->left, value);
+
+		return node;
+	}
+
+	Node* Remove(Node* node, int value) {
+		if (node == nullptr) return nullptr;
+		
+		if (node->value < value) node->right = this->Remove(node->right, value);
+		else if (node->value > value) node->left = this->Remove(node->left, value);
+		else {
+			if (node->left == nullptr) {
+				Node* temp = node->right;
+				delete node;
+				return temp;
+			} 
+			else if (node->right == nullptr) {
+				Node* temp = node->left;
+				delete node;
+				return temp;
+			} 
+			else {
+				Node* temp = this->FindMin(node->right);
+				node->value = temp->value;
+				node->right = this->Remove(node->right, temp->value);
+			}
+		}
+
+		return node;
+	}
+
+	Node* FindMin(Node* node) {
+		while (node->left != nullptr) {
+			node = node->left;
+		}
+
+		return node;
+	}
+
+	void PreOrder(Node* node) {
+		if (node == nullptr) return;
+
+		std::cout << node->value << "\t";
+		this->PreOrder(node->left);
+		this->PreOrder(node->right);
+	}
+
+	void InOrder(Node* node) {
+		if (node == nullptr) return;
+
+		this->InOrder(node->left);
+		std::cout << node->value << "\t";
+		this->InOrder(node->right);
+	}
+
+	void PostOrder(Node* node) {
+		if (node == nullptr) return;
+
+		this->PostOrder(node->left);
+		this->PostOrder(node->right);
+		std::cout << node->value << "\t";
+	}
+
+	void LevelOrder(Node* node) {
+		if (node == nullptr) return;
+		std::queue<Node*> que;
+		que.push(node);
+
+		while (que.size() != 0) {
+			Node* front = que.front();
+
+			std::cout << front->value << "\t";
+			
+			if(front->left != nullptr) que.push(front->left);
+			if (front->right != nullptr) que.push(front->right);
+			
+			que.pop();
+
+		}
+	}
+};
+
 
 int main() {
 	std::vector<int> v = { 5,8,3,9,0,7,44,55,2,43,11, 22,17,66 };
 	
-	HeapSort(v);
-	PrintVector(v);
-	std::cout << InterpolationSearch(v, 0, v.size() - 1, 17) << "\n";
+	BinarySearchTree b;
+	b.Insert(3);
+	b.Insert(2);
+	b.Insert(11);
+	b.Insert(44);
+	b.Insert(22);
+	b.Insert(1);
+	b.LevelOrder();
+	
 }
