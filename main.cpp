@@ -2,6 +2,8 @@
 #include <vector>
 #include <stack>
 #include <queue>
+#include <algorithm>
+#include <cmath>
 
 /* Zaimplementuj Min - Heap [ ZROBIONE ] */ 
 /* Zaimplementuj QuickSort ( rekurencyjne z osobn¹ funkcj¹ partycjonuj¹c¹, oraz iteracyjnie )  [ ZROBIONE ] */
@@ -20,7 +22,7 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych ) [ ZROBIONE ] */
 /* Zaimplementuj Wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
 /* Zaimplementuj Drzewo poszukiwañ binarnych BST ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
-
+/* Zaimplementuj Drzewo AVL ( search, insert, remove, Depth / Breadth First Search ) */
 
 class MinHeap final {
 private:
@@ -577,10 +579,10 @@ public:
 	void PostOrder() {
 		this->PostOrder(this->root);
 	}
-
 	void LevelOrder() {
 		this->LevelOrder(this->root);
 	}
+
 
 private:
 
@@ -594,28 +596,28 @@ private:
 
 	Node* Insert(Node* node, int value) {
 		if (node == nullptr) node = new Node(value, nullptr, nullptr);
-		else if (node->value < value) node->right = this->Insert(node->right, value);
+		
+		if (node->value < value) node->right = this->Insert(node->right, value);
 		else if (node->value > value) node->left = this->Insert(node->left, value);
-
+		
 		return node;
 	}
 
 	Node* Remove(Node* node, int value) {
 		if (node == nullptr) return nullptr;
-		
-		if (node->value < value) node->right = this->Remove(node->right, value);
+		else if (node->value < value) node->right = this->Remove(node->right, value);
 		else if (node->value > value) node->left = this->Remove(node->left, value);
 		else {
 			if (node->left == nullptr) {
 				Node* temp = node->right;
 				delete node;
 				return temp;
-			} 
+			}
 			else if (node->right == nullptr) {
 				Node* temp = node->left;
 				delete node;
 				return temp;
-			} 
+			}
 			else {
 				Node* temp = this->FindMin(node->right);
 				node->value = temp->value;
@@ -636,7 +638,6 @@ private:
 
 	void PreOrder(Node* node) {
 		if (node == nullptr) return;
-
 		std::cout << node->value << "\t";
 		this->PreOrder(node->left);
 		this->PreOrder(node->right);
@@ -644,7 +645,6 @@ private:
 
 	void InOrder(Node* node) {
 		if (node == nullptr) return;
-
 		this->InOrder(node->left);
 		std::cout << node->value << "\t";
 		this->InOrder(node->right);
@@ -652,7 +652,6 @@ private:
 
 	void PostOrder(Node* node) {
 		if (node == nullptr) return;
-
 		this->PostOrder(node->left);
 		this->PostOrder(node->right);
 		std::cout << node->value << "\t";
@@ -665,29 +664,252 @@ private:
 
 		while (que.size() != 0) {
 			Node* front = que.front();
-
-			std::cout << front->value << "\t";
-			
-			if(front->left != nullptr) que.push(front->left);
-			if (front->right != nullptr) que.push(front->right);
-			
 			que.pop();
 
+			std::cout << front->value << "\t";
+			if (front->left != nullptr) que.push(front->left);
+			if (front->right != nullptr) que.push(front->right);
+
+		}
+	}
+};
+
+int GetMax(int a, int b) {
+	return a > b ? a : b;
+}
+
+struct AVLNode {
+	AVLNode* left, * right;
+	int value, bf, height;
+
+	AVLNode(int value, AVLNode* left, AVLNode* right) : value(value), left(left), right(right), height(0) {};
+};
+
+class AVLTree {
+private:
+	AVLNode* root = nullptr;
+public:
+
+	bool Search(int value) {
+		return this->Search(this->root, value);
+	}
+
+	void Insert(int value) {
+		if (this->Search(value)) return;
+		this->root = this->Insert(this->root, value);
+	}
+
+	void Remove(int value) {
+		if (!this->Search(value)) return;
+		this->root = this->Remove(this->root, value);
+	}
+
+	void PreOrder() {
+		this->PreOrder(this->root);
+	}
+
+	void InOrder() {
+		this->InOrder(this->root);
+	}
+
+	void PostOrder() {
+		this->PostOrder(this->root);
+	}
+
+	void LevelOrder() {
+		this->LevelOrder(this->root);
+	}
+
+private:
+
+	bool Search(AVLNode* node, int value) {
+		if (node == nullptr) return false;
+
+		if (node->value < value) return this->Search(node->right, value);
+		else if (node->value > value) return this->Search(node->left, value);
+		else return true;
+	}
+
+	AVLNode* Insert(AVLNode* node, int value) {
+		if (node == nullptr) node = new AVLNode(value, nullptr, nullptr);
+		
+		if (node->value < value) node->right = this->Insert(node->right, value);
+		else if (node->value > value) node->left = this->Insert(node->left, value);
+
+		this->UpdateBalanceFactor(node);
+		return this->ReBalanceTree(node);
+	}
+
+	AVLNode* Remove(AVLNode* node, int value) {
+		if (node == nullptr) return nullptr;
+
+		if (node->value < value) node->right = this->Remove(node->right, value);
+		else if (node->value > value) node->left = this->Remove(node->left, value);	
+		else
+		{
+			if (node->left == nullptr) {
+				AVLNode* temp = node->right;
+				delete node;
+				return temp;
+			}
+			else if (node->right == nullptr) {
+				AVLNode* temp = node->left;
+				delete node;
+				return temp;
+			}
+			else {
+				AVLNode* temp = this->FindMin(node->right);
+				node->value = temp->value;
+				node->right = this->Remove(node->right, temp->value);
+			}
+		}
+
+		this->UpdateBalanceFactor(node);
+		this->ReBalanceTree(node);
+		return node;
+	}
+
+	AVLNode* FindMin(AVLNode* node) {
+		while (node->left != nullptr) {
+			node = node->left;
+		}
+		return node;
+	}
+
+	void UpdateBalanceFactor(AVLNode* node) {
+		const int leftHeight = node->left == nullptr ? -1 : node->left->height;
+		const int rightHeight = node->right == nullptr ? -1 : node->right->height;
+
+		node->height = GetMax(leftHeight, rightHeight) + 1;
+		node->bf = leftHeight - rightHeight;
+	}
+
+	AVLNode* ReBalanceTree(AVLNode* node) {
+		if (node->bf > 1) {
+			if (node->left->bf >= 0) {
+				return this->RightRotation(node);
+			}
+			else {
+				return this->LeftRightRotation(node);
+			}
+		} 
+		else if (node->bf < -1) {
+			if (node->right->bf <= 0) {
+				return this->LeftRotation(node);
+			}
+			else {
+				return this->RightLeftRotation(node);
+			}
+		}
+		return node;
+	}
+
+	AVLNode* LeftRotation(AVLNode* node) {
+		return this->RotateLeft(node);
+	}
+
+	AVLNode* RightRotation(AVLNode* node) {
+		return this->RotateRight(node);
+	}
+
+	AVLNode* LeftRightRotation(AVLNode* node) {
+		node->left = this->LeftRotation(node->left);
+		return this->RightRotation(node);
+	}
+
+	AVLNode* RightLeftRotation(AVLNode* node) {
+		node->right = this->RightRotation(node->right);
+		return this->LeftRotation(node);
+	}
+
+	AVLNode* RotateLeft(AVLNode* node) {
+		AVLNode* parent = node->right;
+		node->right = parent->left;
+		parent->left = node;
+
+		this->UpdateBalanceFactor(node);
+		this->UpdateBalanceFactor(parent);
+
+		return parent;
+	}
+
+	AVLNode* RotateRight(AVLNode* node) {
+		AVLNode* parent = node->left;
+		node->left = parent->right;
+		parent->right = node;
+
+		this->UpdateBalanceFactor(node);
+		this->UpdateBalanceFactor(parent);
+
+		return parent;
+	}
+
+	void PreOrder(AVLNode* node) {
+		if (node == nullptr) return;
+
+		std::cout << node->value << "\t";
+		this->PreOrder(node->left);
+		this->PreOrder(node->right);
+	}
+
+	void InOrder(AVLNode* node) {
+		if (node == nullptr) return;
+
+		this->InOrder(node->left);
+		std::cout << node->value << "\t";
+		this->InOrder(node->right);
+	}
+
+	void PostOrder(AVLNode* node) {
+		if (node == nullptr) return;
+
+		this->PostOrder(node->left);
+		this->PostOrder(node->right);
+		std::cout << node->value << "\t";
+	}
+
+	void LevelOrder(AVLNode* node) {
+		std::queue<AVLNode*> nodes;
+		nodes.push(node);
+
+		while (nodes.size() != 0) {
+			AVLNode* first = nodes.front();
+	
+			std::cout << first->value << "\t";
+
+			if (first->left != nullptr) nodes.push(first->left);
+			if (first->right != nullptr) nodes.push(first->right);
+
+			nodes.pop();
 		}
 	}
 };
 
 
 int main() {
-	std::vector<int> v = { 5,8,3,9,0,7,44,55,2,43,11, 22,17,66 };
+	AVLTree atree;
+	BinarySearchTree tree;
+
+	atree.Insert(11);
+	atree.Insert(16);
+	atree.Insert(17);
+	atree.Insert(19);
+	atree.Insert(22);
+	atree.Insert(12);
+	atree.Insert(8);
+	atree.Insert(9);
+
+	tree.Insert(11);
+	tree.Insert(16);
+	tree.Insert(17);
+	tree.Insert(19);
+	tree.Insert(22);
+	tree.Insert(12);
+	tree.Insert(8);
+	tree.Insert(9);
+
+	atree.LevelOrder();
+
 	
-	BinarySearchTree b;
-	b.Insert(3);
-	b.Insert(2);
-	b.Insert(11);
-	b.Insert(44);
-	b.Insert(22);
-	b.Insert(1);
-	b.LevelOrder();
 	
 }
