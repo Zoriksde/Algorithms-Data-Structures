@@ -16,13 +16,13 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj Algorytm Bluma Floyda Pratta Rivesta Tarjana ( osoba funkcja do mediany i partycjonowania )  [ ZROBIONE ]*/
 /* Zaimplementuj Algorytm Binary Search ( rekurencyjnie oraz iteracyjnie ) [ ZROBIONE ] */
 /* Zaimplementuj QuickSort ( rekurencyjnie z granic¹ ), oraz MergeSort ( rekurencyjnie ) [ ZROBIONE ] */
-/* ====================================================================================================== */
 /* Zaimplementuj ShellSort ( dowolny algorytm licz¹cy dystans ) [ ZROBIONE ] */
 /* Zaimplementuj Algorytm Euklidesa ( rekurencyjnie oraz iteracyjnie ) [ ZROBIONE ] */
 /* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych ) [ ZROBIONE ] */
 /* Zaimplementuj Wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
 /* Zaimplementuj Drzewo poszukiwañ binarnych BST ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
-/* Zaimplementuj Drzewo AVL ( search, insert, remove, Depth / Breadth First Search ) */
+/* Zaimplementuj Drzewo AVL ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
+/* Zaimplementuj Drzewo Splay ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
 
 class MinHeap final {
 private:
@@ -885,31 +885,191 @@ private:
 	}
 };
 
+class SplayTree {
+private:
+	Node* root = nullptr;
+public:
+
+	void Insert(int value) {
+		this->root = this->Insert(this->root, value);
+	}
+
+	void Remove(int value) {
+		this->root = this->Remove(this->root, value);
+	}
+
+	void PreOrder() {
+		this->PreOrder(this->root);
+	}
+
+	void InOrder() {
+		this->InOrder(this->root);
+	}
+
+	void PostOrder() {
+		this->PostOrder(this->root);
+	}
+
+	void LevelOrder() {
+		this->LevelOrder(this->root);
+	}
+
+private:
+
+	Node* Splay(Node* node, int value) {
+		if (node == nullptr || node->value == value) return node;
+
+		if (node->value > value) {
+			if (node->left == nullptr) return node; // no value in tree
+
+			// Zag Zag case:
+			if (node->left->value > value) {
+				node->left->left = this->Splay(node->left->left, value);
+				node = this->RightRotate(node);
+			}
+
+			// Zag Zig case:
+			if (node->left->value < value) {
+				node->left->right = this->Splay(node->left->right, value);
+				
+				if (node->left->right != nullptr) {
+					node->left = this->LeftRotate(node->left);
+				}
+			}
+
+			// Zig case:
+			return node->left == nullptr ? node : this->RightRotate(node);
+
+		}
+		else {
+			
+			if (node->right == nullptr) return node; // no value in tree
+
+			// Zig Zag case:
+			if (node->right->value > value) {
+				node->right->left = this->Splay(node->right->left, value);
+
+				if (node->right->left != nullptr) {
+					node->right = this->RightRotate(node->right);
+				}
+			}
+			// Zig Zig case:
+			else if (node->right->value < value) {
+				node->right->right = this->Splay(node->right->right, value);
+				node = this->LeftRotate(node);
+			}
+
+			// Zag case:
+			return node->right == nullptr ? node : this->LeftRotate(node);
+		}
+	}
+
+	Node* Insert(Node* node, int value) {
+		if (node == nullptr) node = new Node(value, nullptr, nullptr);
+
+		if (node->value < value) node->right = this->Insert(node->right, value);
+		else if (node->value > value) node->left = this->Insert(node->left, value);	
+		node = this->Splay(node, value);
+	
+		return node;
+	}
+
+	Node* Remove(Node* node, int value) {
+		if (node == nullptr) return node;
+
+		node = this->Splay(node, value);
+
+		if (node->value < value) node->right = this->Remove(node->right, value);
+		else if (node->value > value) node->left = this->Remove(node->left, value);
+		else {
+			if (node->left == nullptr) {
+				Node* temp = node->right;
+				delete node;
+				return temp;
+			}
+			else if (node->right == nullptr) {
+				Node* temp = node->left;
+				delete node;
+				return temp;
+			}
+			else {
+				Node* temp = this->FindMin(node->right);
+				node->value = temp->value;
+				node->right = this->Remove(node->right, temp->value);
+			}
+		}
+		
+		return node;
+	}
+
+	Node* FindMin(Node* node) {
+		while (node->left != nullptr) {
+			node = node->left;
+		}
+
+		return node;
+	}
+
+	Node* RightRotate(Node* node) {
+		Node* parent = node->left;
+		node->left = parent->right;
+		parent->right = node;
+
+		return parent;
+	}
+
+	Node* LeftRotate(Node* node) {
+		Node* parent = node->right;
+		node->right = parent->left;
+		parent->left = node;
+
+		return parent;
+	}
+
+	void PreOrder(Node* node) {
+		if (node == nullptr) return;
+
+		std::cout << node->value << "\t";
+		this->PreOrder(node->left);
+		this->PreOrder(node->right);
+	}
+
+	void InOrder(Node* node) {
+		if (node == nullptr) return;
+
+		this->InOrder(node->left);
+		std::cout << node->value << "\t";
+		this->InOrder(node->right);
+	}
+
+	void PostOrder(Node* node) {
+		if (node == nullptr) return;
+
+		this->PostOrder(node->left);
+		this->PostOrder(node->right);
+		std::cout << node->value << "\t";
+	}
+
+	void LevelOrder(Node* node) {
+		std::queue<Node*> nodes;
+		nodes.push(node);
+
+		while (nodes.size() != 0) {
+			Node* first = nodes.front();
+
+			std::cout << first->value << "\t";
+
+			if (first->left != nullptr) nodes.push(first->left);
+			if (first->right != nullptr) nodes.push(first->right);
+
+			nodes.pop();
+		}
+	}
+};
+
 
 int main() {
-	AVLTree atree;
-	BinarySearchTree tree;
-
-	atree.Insert(11);
-	atree.Insert(16);
-	atree.Insert(17);
-	atree.Insert(19);
-	atree.Insert(22);
-	atree.Insert(12);
-	atree.Insert(8);
-	atree.Insert(9);
-
-	tree.Insert(11);
-	tree.Insert(16);
-	tree.Insert(17);
-	tree.Insert(19);
-	tree.Insert(22);
-	tree.Insert(12);
-	tree.Insert(8);
-	tree.Insert(9);
-
-	atree.LevelOrder();
-
 	
+
 	
 }
