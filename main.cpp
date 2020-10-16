@@ -21,8 +21,12 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj Sito Erastotenesa ( algorytm do znajdowania liczb pierwszych ) [ ZROBIONE ] */
 /* Zaimplementuj Wyszukiwanie interpolacyjne ( Rozk³ad Bernoulliego ) [ ZROBIONE ] */
 /* Zaimplementuj Drzewo poszukiwañ binarnych BST ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
-/* Zaimplementuj Drzewo AVL ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
-/* Zaimplementuj Drzewo Splay ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ]*/
+/* Zaimplementuj Drzewo AVL ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ] */
+/* Zaimplementuj Drzewo Splay ( search, insert, remove, Depth / Breadth First Search ) [ ZROBIONE ] */
+/* Przeanalizuj funkcje mieszaj¹ce wraz z metodami: metoda ³añcuchowa, metoda otwartych adresów [ ZROBIONE ] */
+/* Zaimplementuj funkcje operate na manipulacji bitami ( and, or, xor, shifts, neg ) [ ZROBIONE ] */
+/* Zaimplementuj Algorytm, który sprawdzi czy liczba jest palindromem [ ZROBIONE ]*/
+/* Zaimplementuj Algorytm, który policzy silnie du¿ej liczby ( np n = 10e3 ) [ ZROBIONE ] */
 
 class MinHeap final {
 private:
@@ -889,7 +893,6 @@ class SplayTree {
 private:
 	Node* root = nullptr;
 public:
-
 	void Insert(int value) {
 		this->root = this->Insert(this->root, value);
 	}
@@ -920,32 +923,32 @@ private:
 		if (node == nullptr || node->value == value) return node;
 
 		if (node->value > value) {
-			if (node->left == nullptr) return node; // no value in tree
 
-			// Zag Zag case:
+			if (node->left == nullptr) return node;
+
+			//* Zig Zig case:
 			if (node->left->value > value) {
 				node->left->left = this->Splay(node->left->left, value);
 				node = this->RightRotate(node);
 			}
 
-			// Zag Zig case:
-			if (node->left->value < value) {
+			//* Zag Zig case:
+			else if (node->left->value < value) {
 				node->left->right = this->Splay(node->left->right, value);
-				
+
 				if (node->left->right != nullptr) {
 					node->left = this->LeftRotate(node->left);
 				}
 			}
 
-			// Zig case:
+			//* Zig case:
 			return node->left == nullptr ? node : this->RightRotate(node);
-
 		}
 		else {
-			
-			if (node->right == nullptr) return node; // no value in tree
 
-			// Zig Zag case:
+			if (node->right == nullptr) return node;
+
+			//* Zig Zag case:
 			if (node->right->value > value) {
 				node->right->left = this->Splay(node->right->left, value);
 
@@ -953,13 +956,13 @@ private:
 					node->right = this->RightRotate(node->right);
 				}
 			}
-			// Zig Zig case:
+
+			//* Zag Zag case:
 			else if (node->right->value < value) {
 				node->right->right = this->Splay(node->right->right, value);
 				node = this->LeftRotate(node);
 			}
 
-			// Zag case:
 			return node->right == nullptr ? node : this->LeftRotate(node);
 		}
 	}
@@ -968,9 +971,9 @@ private:
 		if (node == nullptr) node = new Node(value, nullptr, nullptr);
 
 		if (node->value < value) node->right = this->Insert(node->right, value);
-		else if (node->value > value) node->left = this->Insert(node->left, value);	
+		else if (node->value > value) node->left = this->Insert(node->left, value);
 		node = this->Splay(node, value);
-	
+
 		return node;
 	}
 
@@ -982,24 +985,25 @@ private:
 		if (node->value < value) node->right = this->Remove(node->right, value);
 		else if (node->value > value) node->left = this->Remove(node->left, value);
 		else {
+
 			if (node->left == nullptr) {
 				Node* temp = node->right;
 				delete node;
 				return temp;
 			}
+
 			else if (node->right == nullptr) {
 				Node* temp = node->left;
 				delete node;
 				return temp;
 			}
+
 			else {
 				Node* temp = this->FindMin(node->right);
 				node->value = temp->value;
 				node->right = this->Remove(node->right, temp->value);
 			}
 		}
-		
-		return node;
 	}
 
 	Node* FindMin(Node* node) {
@@ -1067,9 +1071,79 @@ private:
 	}
 };
 
+short AND(int a, int b) {
+	return a & b;
+}
+
+short OR(int a, int b) {
+	return a | b;
+}
+
+short XOR(int a, int b) {
+	return a ^ b;
+
+}
+
+short NEG(int a) {
+	return ~a;
+}
+
+short SHIFT_LEFT(int a) {
+	return a << 1;
+}
+
+short SHIFT_RIGHT(int a) {
+	return a >> 1;
+}
+
+bool IsPalindrome(int v) {
+	int t = v;
+	int res = 0;
+	int pop;
+
+	while (t != 0) {
+		pop = t % 10;
+		res = res * 10 + pop;
+		t /= 10;
+	}
+
+	return res == v ? true : false;
+}
+
+int Multiply(int x, int res[], int res_size) {
+	int rest = 0;
+
+	for (int i = 0; i < res_size; i++) {
+		int num = res[i] * x + rest;
+		res[i] = num % 10;
+		rest = num / 10;
+	}
+
+	while (rest) {
+		res[res_size] = rest;
+		rest /= 10;
+		res_size++;
+	}
+
+	return res_size;
+}
+
+void Factorial(int n) {
+	int res[100000];
+	res[0] = 1;
+	int res_size = 1;
+
+	for (int i = 2; i <= n; i++) {
+		res_size = Multiply(i, res, res_size);
+	}
+
+	for (int i = res_size - 1; i >= 0; i--) {
+		std::cout << res[i] << "";
+	}
+
+	std::cout << "\n";
+}
 
 int main() {
-	
-
-	
+	Factorial(10e3);
 }
