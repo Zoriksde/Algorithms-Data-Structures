@@ -3,6 +3,7 @@
 #include <stack>
 #include <queue>
 #include <algorithm>
+#include <unordered_map>
 #include <cmath>
 
 /* Zaimplementuj Min - Heap [ ZROBIONE ] */ 
@@ -27,6 +28,7 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj funkcje operate na manipulacji bitami ( and, or, xor, shifts, neg ) [ ZROBIONE ] */
 /* Zaimplementuj Algorytm, który sprawdzi czy liczba jest palindromem [ ZROBIONE ]*/
 /* Zaimplementuj Algorytm, który policzy silnie du¿ej liczby ( np n = 10e3 ) [ ZROBIONE ] */
+/* Zaimplemetuj Drzewo Trie ( search, insert, remove ), metody te zaimplementuj iteracyjnie oraz rekurencyjnie [ ZROBIONE ] */
 
 class MinHeap final {
 private:
@@ -1129,6 +1131,7 @@ int Multiply(int x, int res[], int res_size) {
 }
 
 void Factorial(int n) {
+	
 	int res[100000];
 	res[0] = 1;
 	int res_size = 1;
@@ -1144,6 +1147,155 @@ void Factorial(int n) {
 	std::cout << "\n";
 }
 
+struct TrieNode {
+	std::unordered_map<char, TrieNode*>* children;
+	bool isLeafNode;
+
+	TrieNode() {
+		isLeafNode = false;
+		children = new std::unordered_map<char, TrieNode*>();
+	}
+};
+
+class Trie {
+private:
+	TrieNode* root = new TrieNode();
+public:
+
+	bool Search(std::string key) {
+		return this->Search(this->root, key);
+	}
+
+	bool SearchRecursivly(std::string key) {
+		return this->SearchRecursivly(this->root, key, 0);
+	}
+
+	void Insert(std::string key) {
+		return this->Insert(this->root, key);
+	}
+
+	void InsertRecursivly(std::string key) {
+		return this->InsertRecursivly(this->root, key, 0);
+	}
+
+	void Remove(std::string key) {
+		this->Remove(this->root, key, 0);
+	}
+
+private:
+
+	bool Search(TrieNode* node, std::string key) {
+		TrieNode* current = node;
+
+		for (int i = 0; i < key.size(); i++) {
+			char letter = key[i];
+			TrieNode* child = nullptr;
+			
+			if (current->children->find(letter) != current->children->end()) {
+				child = current->children->at(letter);
+			}
+
+			if (child == nullptr) {
+				return false;
+			}
+			current = child;
+		}
+
+		return current->isLeafNode;
+	}
+
+	bool SearchRecursivly(TrieNode* node, std::string key, int idx) {
+		if (idx == key.size()) {
+			return node->isLeafNode;
+		}
+
+		char letter = key[idx];
+		TrieNode* child = nullptr;
+		if (node->children->find(letter) != node->children->end()) {
+			child = node->children->at(letter);
+		}
+
+		if (child == nullptr) return false;
+
+		return this->SearchRecursivly(child, key, idx + 1);
+	}
+
+	void Insert(TrieNode* node, std::string key) {
+		TrieNode* current = node;
+
+		for (int i = 0; i < key.size(); i++) {
+			char letter = key[i];
+			TrieNode* child = nullptr;
+			
+			if (current->children->find(letter) != current->children->end()) {
+				child = current->children->at(letter);
+			}
+			if (child == nullptr) {
+				child = new TrieNode();
+				current->children->emplace(letter, child);
+			}
+
+			current = child;
+		}
+
+		current->isLeafNode = true;
+	}
+
+	void InsertRecursivly(TrieNode* node, std::string key, int idx) {
+		if (idx == key.size()) {
+			node->isLeafNode = true;
+			return;
+		}
+
+		char letter = key[idx];
+		TrieNode* child = nullptr;
+		if (node->children->find(letter) != node->children->end()) {
+			 child = node->children->at(letter);
+		}
+	
+		if (child == nullptr) {
+			child = new TrieNode();
+			node->children->emplace(letter, child);
+		}
+
+		this->InsertRecursivly(child, key, idx + 1);
+	}
+
+	bool Remove(TrieNode* node, std::string key, int idx) {
+		if (idx == key.size()) {
+			if (!node->isLeafNode) {
+				return false;
+			}
+
+			node->isLeafNode = false;
+			return node->children->size() == 0;
+		}
+
+		char letter = key[idx];
+		if (node->children->find(letter) == node->children->end()) return false;
+		
+		TrieNode* child = node->children->at(letter);
+		if (child == nullptr) {
+			return false;
+		}
+
+		bool toRemove = this->Remove(child, key, idx + 1);
+
+		if (toRemove) {
+			node->children->erase(letter);
+			return node->children->size() == 0;
+		}
+
+		return false;
+
+	}
+};
+
 int main() {
-	Factorial(10e3);
+	Trie tr;
+	tr.Insert("pawel");
+	tr.Insert("patryk");
+	tr.Remove("pawel");
+
+	std::cout << tr.Search("patryk") << "\n";
 }
