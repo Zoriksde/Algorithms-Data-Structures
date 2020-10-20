@@ -29,6 +29,9 @@ operacji : construct, heapdown  [ ZROBIONE ] */
 /* Zaimplementuj Algorytm, który sprawdzi czy liczba jest palindromem [ ZROBIONE ]*/
 /* Zaimplementuj Algorytm, który policzy silnie du¿ej liczby ( np n = 10e3 ) [ ZROBIONE ] */
 /* Zaimplemetuj Drzewo Trie ( search, insert, remove ), metody te zaimplementuj iteracyjnie oraz rekurencyjnie [ ZROBIONE ] */
+/* Przeanalizuj drzewa RST oraz Patricia, na podstawie drzewa Trie [ ZROBIONE ] */
+/* Zaimplementuj Algorytm String Reverse [ ZROBIONE ] */
+/* Zaimplementuj Algorytm, który roz³o¿y liczbê na czynniki pierwsze [ ZROBIONE ] */
 
 class MinHeap final {
 private:
@@ -1291,11 +1294,48 @@ private:
 	}
 };
 
-int main() {
-	Trie tr;
-	tr.Insert("pawel");
-	tr.Insert("patryk");
-	tr.Remove("pawel");
+std::string Reverse(std::string str) {
+	int i = 0;
+	int j = str.size() - 1;
 
-	std::cout << tr.Search("patryk") << "\n";
+	while (i < j) {
+		std::swap(str[i], str[j]);
+		i++;
+		j--;
+	}
+	
+	return str;
+}
+
+std::vector<int> GetPrimeFactors(int n) {
+	std::vector<int> factors;
+	int c = n;
+	int div = 2;
+
+	while (n != 1) {
+		if (n % div == 0) {
+			factors.push_back(div);
+			n /= div;
+		}
+		else {
+			div++;
+		}
+	}
+
+	if (factors[factors.size() - 1] != c) {
+		return factors;
+	}
+	else {
+		factors.pop_back();
+		return factors;
+	}
+}
+
+int main() {
+	
+	auto prim = GetPrimeFactors(2273);
+	for (auto& p : prim) {
+		std::cout << p << "\t";
+	}
+	
 }
